@@ -15,8 +15,8 @@ library(decontam)  # Decontamination package
 
 # Set path to your data
 Make sure - data is trimmed 
-path <- "/Users/yourpath"  ## CHANGE to your fastq directory
-list.files(path)
+```path <- "/Users/yourpath"  ## CHANGE to your fastq directory
+list.files(path)```
 
 # Identify forward and reverse reads
 fnFs <- sort(list.files(path, pattern="_R1_trimmed.fastq", full.names = TRUE))
