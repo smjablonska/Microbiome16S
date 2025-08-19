@@ -124,7 +124,6 @@ sample_names(ps) <- sort(sample_names(ps))
 
 ## Identify contaminants using prevalence method
 valid_samples <- sample_names(ps)[sample_names(ps) != control_sample & sample_names(ps) %in% rownames(seqtab.nochim)]
-contamdf_prev <- isContaminant(ps, method="prevalence", neg=sample_names(ps) == control_sample & sample_names(ps) %in% valid_samples)
 
 # Extract OTU table from ps
 otu_mat <- as(otu_table(ps), "matrix")
@@ -175,17 +174,18 @@ if (length(missing_samples_in_plot) > 0) {
   plot_data <- rbind(plot_data, empty_rows)
 }
 
-## Ensure factor levels are ordered correctly
+## Order genera correctly
 unique_genera <- unique(plot_data$Genus)
 plot_data$Genus <- factor(plot_data$Genus, levels = c("Staphylococcus", setdiff(unique_genera, c("Staphylococcus", "Other", "NA")), "Other", "NA"))
 
 ## Generate the color palette
-custom_palette_path <- "/home/bioi488/16S_Sandra/Urobiome.colors.Package.R"
+custom_palette_path <- "/home/bioi488/16S_Sandra/Urobiome.colors.Package.R" #Can load any other palette you want
 if (file.exists(custom_palette_path)) {
   source(custom_palette_path)
   palette_colors <- urobiome.colors
 
   ## Add Ligilactobacillus, Azospirillum, Dolosigranulum, Sphingomonas, Phyllobacterium, Lautropia if not present
+  ##These were just not present in packet
   if (!"Ligilactobacillus" %in% names(palette_colors)) {
     palette_colors["Ligilactobacillus"] <- rgb(204, 0, 204, maxColorValue = 255)
   }
@@ -219,14 +219,6 @@ plot1 <- ggplot(plot_data, aes(x = Sample, y = Abundance, fill = Genus)) +
     legend.position = "right"
   ) +
   labs(x = "Sample", y = "Relative Abundance (%)", fill = "Genus")
-
-## Save Graph 1 as SVG
-svg_file <- "Oral30editable.svg"
-ggsave(filename = svg_file, plot = plot1, width = 12, height = 8, units = "in")
-
-## Export Overall Abundance of All Taxa Per Sample
-abundance_per_sample <- aggregate(Abundance ~ Genus + Sample, data = plot_data, sum)
-write.csv(abundance_per_sample, "NasalMarch27th_Abundance_Per_Sample.csv", row.names = FALSE)
 ```
 
 # Alpha diversity 
@@ -254,6 +246,7 @@ alpha_long <- alpha_df %>%
                names_to = "Index",
                values_to = "Diversity")
 
+#Graph 3: Alpha diversity
 p_alpha <- ggplot(alpha_long, aes(x = Index, y = Diversity, fill = Index)) +
   geom_boxplot(alpha = 0.8) +
   geom_jitter(width = 0.2, size = 1) +
@@ -263,7 +256,8 @@ p_alpha <- ggplot(alpha_long, aes(x = Index, y = Diversity, fill = Index)) +
        y = "Diversity Value") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
-```      
+```
+
 # Beta diversity 
 ```r
 ### Load required libraries
@@ -323,7 +317,7 @@ p <- ggplot(pcoa_df, aes(x = Axis.1, y = Axis.2, color = Source)) +
   theme(legend.title = element_blank(),
         plot.title = element_text(hjust = 0.5, face = "bold"))
 
-### Save plot
+### Graph 2
 ggsave("PCoA_RelAbund_Combined.png", p, width = 8, height = 6)
 
 ### PERMANOVA (overall)
