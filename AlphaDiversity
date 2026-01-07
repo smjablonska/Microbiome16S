@@ -1,0 +1,33 @@
+library(phyloseq)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+#Calculate alpha diversity measures
+alpha_df <- estimate_richness(ps, measures = c("Shannon", "Simpson"))
+
+#Add metadata (e.g., anatomical site)
+metadata_df <- data.frame(sample_data(ps)) %>%
+  mutate(SampleID = rownames(.))
+
+#Merge with diversity data
+alpha_df <- alpha_df %>%
+  mutate(SampleID = rownames(.)) %>%
+  left_join(metadata_df, by = "SampleID")
+
+#Reshape to long format (so Shannon and Simpson are stacked in one column)
+alpha_long <- alpha_df %>%
+  pivot_longer(cols = c("Shannon", "Simpson"),
+               names_to = "Index",
+               values_to = "Diversity")
+
+#Graph 3: Alpha diversity
+p_alpha <- ggplot(alpha_long, aes(x = Index, y = Diversity, fill = Index)) +
+  geom_boxplot(alpha = 0.8) +
+  geom_jitter(width = 0.2, size = 1) +
+  theme_minimal() +
+  labs(title = "Alpha Diversity (Single Site)",
+       x = "Diversity Index",
+       y = "Diversity Value") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
